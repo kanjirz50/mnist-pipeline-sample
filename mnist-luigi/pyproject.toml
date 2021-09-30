@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "mnist-luigi"
+version = "0.1.0"
+description = ""
+authors = ["Takahashi Kanji <ka.takahashi@sansan.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+luigi = "^3.0.3"
+scikit-learn = "^0.24.2"
+joblib = "^1.0.1"
+
+[tool.poetry.dev-dependencies]
+flake8 = "^3.9.2"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
