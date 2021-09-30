@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "mnist_gokart"
+version = "1.0.0"
+description = "What's this project?"
+authors = ["Kanji Takahashi"]
+license = "Proprietary"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+gokart = "*"
+scikit-learn = "^0.24.2"
+joblib = "^1.0.1"
+
+
+[tool.poetry.dev-dependencies]
+flake8 = "^3.9.2"
+[build-system]
+requires = ["poetry"]
+build-backend = "poetry.masonry.api"
