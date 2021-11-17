@@ -1,5 +1,6 @@
 from logging import getLogger
 
+import gokart
 import luigi
 
 from sklearn import metrics, svm
@@ -45,8 +46,7 @@ class PreprocessingTask(GokartTask):
 
 
 class TrainingTask(GokartTask):
-    def requires(self):
-        return PreprocessingTask()
+    dataset = gokart.TaskInstanceParameter()
 
     def run(self):
         dataset = self.load()
@@ -61,11 +61,8 @@ class TrainingTask(GokartTask):
 
 
 class PredictionTask(GokartTask):
-    def requires(self):
-        return {
-            "dataset": PreprocessingTask(),
-            "model": TrainingTask()
-        }
+    dataset = gokart.TaskInstanceParameter()
+    model = gokart.TaskInstanceParameter()
 
     def run(self):
         dataset = self.load('dataset')
@@ -77,8 +74,7 @@ class PredictionTask(GokartTask):
 
 
 class ClassificationReportTask(GokartTask):
-    def requires(self):
-        return PredictionTask()
+    prediction_result = gokart.TaskInstanceParameter()
 
     def output(self):
         return self.make_target('classification_report.txt')
@@ -92,3 +88,20 @@ class ClassificationReportTask(GokartTask):
         output = f"{ metrics.classification_report(y_test, predicted) }\n"
 
         self.dump(output)
+
+
+class RandomStateExperimentTask(GokartTask):
+    def requires(self):
+        for i in range(10):
+            dataset = PreprocessingTask(random_state=i)
+            model = TrainingTask(dataset=dataset)
+            prediction_result = PredictionTask(dataset=dataset, model=model)
+            yield ClassificationReportTask(prediction_result=prediction_result)
+
+    def run(self):
+        accuracies = []
+        for classification_report_text in self.load():
+            accuracy_line = classification_report_text[-3]
+            accuracy = accuracy_line.strip().split()[-2]
+            accuracies.append(accuracy)
+        self.dump(max(accuracies))
