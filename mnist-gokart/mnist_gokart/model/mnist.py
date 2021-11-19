@@ -46,7 +46,10 @@ class PreprocessingTask(GokartTask):
 
 
 class TrainingTask(GokartTask):
-    dataset = gokart.TaskInstanceParameter()
+    data_task = gokart.TaskInstanceParameter()
+
+    def requires(self):
+        return self.data_task
 
     def run(self):
         dataset = self.load()
@@ -61,8 +64,14 @@ class TrainingTask(GokartTask):
 
 
 class PredictionTask(GokartTask):
-    dataset = gokart.TaskInstanceParameter()
-    model = gokart.TaskInstanceParameter()
+    data_task = gokart.TaskInstanceParameter()
+    model_task = gokart.TaskInstanceParameter()
+
+    def requires(self):
+        return {
+            'dataset': self.data_task,
+            'model': self.model_task,
+        }
 
     def run(self):
         dataset = self.load('dataset')
@@ -74,7 +83,10 @@ class PredictionTask(GokartTask):
 
 
 class ClassificationReportTask(GokartTask):
-    prediction_result = gokart.TaskInstanceParameter()
+    prediction_task = gokart.TaskInstanceParameter()
+
+    def requires(self):
+        return self.prediction_task
 
     def output(self):
         return self.make_target('classification_report.txt')
@@ -91,12 +103,14 @@ class ClassificationReportTask(GokartTask):
 
 
 class RandomStateExperimentTask(GokartTask):
+    random_state_range: int = luigi.IntParameter(default=10)
+
     def requires(self):
-        for i in range(10):
-            dataset = PreprocessingTask(random_state=i)
-            model = TrainingTask(dataset=dataset)
-            prediction_result = PredictionTask(dataset=dataset, model=model)
-            yield ClassificationReportTask(prediction_result=prediction_result)
+        for i in range(self.random_state_range):
+            data_task = PreprocessingTask(random_state=i)
+            model_task = TrainingTask(data_task=data_task)
+            prediction_task = PredictionTask(data_task=data_task, model_task=model_task)
+            yield ClassificationReportTask(prediction_task=prediction_task)
 
     def run(self):
         accuracies = []
@@ -104,4 +118,4 @@ class RandomStateExperimentTask(GokartTask):
             accuracy_line = classification_report_text[-3]
             accuracy = accuracy_line.strip().split()[-2]
             accuracies.append(accuracy)
-        self.dump(max(accuracies))
+        self.dump(accuracies)
