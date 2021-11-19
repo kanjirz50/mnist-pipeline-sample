@@ -113,9 +113,4 @@ class RandomStateExperimentTask(GokartTask):
             yield ClassificationReportTask(prediction_task=prediction_task)
 
     def run(self):
-        accuracies = []
-        for classification_report_text in self.load():
-            accuracy_line = classification_report_text[-3]
-            accuracy = accuracy_line.strip().split()[-2]
-            accuracies.append(accuracy)
-        self.dump(accuracies)
+        self.dump("Done.")
