@@ -68,8 +68,8 @@ def save_classification_report_task(classification_report):
         fout.write(classification_report)
 
 
-def mnist_experiment_flow():
-    with Flow("hello-flow", result=LocalResult(dir="resources")) as flow:
+def build_mnist_experiment_flow():
+    with Flow("mnist-experiment-flow", result=LocalResult(dir="resources")) as flow:
         random_state = Parameter("random_state", default=42)
 
         digits_data = load_digits_data()
@@ -84,5 +84,5 @@ def mnist_experiment_flow():
 
 
 if __name__ == "__main__":
-    flow = mnist_experiment_flow()
+    flow = build_mnist_experiment_flow()
     flow.run(random_state=42)
